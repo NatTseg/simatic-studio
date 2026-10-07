@@ -1,7 +1,9 @@
 # SIMATIC Studio
 
-A browser-based workspace for exploring representative Siemens industrial devices, arranging them in 3D, editing project configuration and topology, and running a limited Boolean program simulator.
+Live app: https://nattseg.github.io/simatic-studio/
 
-This repository hosts the production build. Projects save in your browser; export JSON for a backup.
+This branch hosts the production build. Editable React/Three.js application code and regression tests are in the [source branch](https://github.com/NatTseg/simatic-studio/tree/source).
 
-The app is an independent engineering prototype. Geometry is illustrative, connections are project metadata, and the simulator does not emulate Siemens firmware or program physical hardware. See the app's Documentation panel for model coverage and manufacturer reference links.
+Version 1.1 adds exact-order Siemens datasheet references, dimensioned housing envelopes, device-specific configuration, validated project files, separate CPU programs, a bounded Boolean scan interpreter and mobile panels. Projects save in your browser; export JSON for backups.
+
+The application is an independent engineering prototype. It does not emulate Siemens firmware, communicate through PROFINET, solve electrical wiring or program physical hardware. The visual details and device behavior are not fully faithful. See [REFERENCES.md](REFERENCES.md) for verified source facts and coverage limits.
