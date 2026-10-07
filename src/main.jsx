@@ -63,8 +63,12 @@ function initialProject() {
 function Device({ d, selected, onSelect, running, objectRef }) {
   const c = catalog.find((x) => x.id === d.kind);
   const front = c.depth / 2 + 0.005;
-  const terminalCount = d.kind === "switch" ? 5 : Math.max(3, Math.floor(c.w * 8));
-  const outline = useMemo(() => new BoxGeometry(c.w + 0.025, c.h + 0.025, c.depth + 0.025), [c]);
+  const terminalCount =
+    d.kind === "switch" ? 5 : Math.max(3, Math.floor(c.w * 8));
+  const outline = useMemo(
+    () => new BoxGeometry(c.w + 0.025, c.h + 0.025, c.depth + 0.025),
+    [c],
+  );
   useEffect(() => () => outline.dispose(), [outline]);
   return (
     <group
@@ -79,7 +83,7 @@ function Device({ d, selected, onSelect, running, objectRef }) {
       <mesh castShadow>
         <boxGeometry args={[c.w, c.h, c.depth]} />
         <meshStandardMaterial
-          color={selected ? "#c2ded5" : c.color}
+          color={selected ? "#c9e8e8" : c.color}
           roughness={0.55}
         />
       </mesh>
@@ -87,26 +91,26 @@ function Device({ d, selected, onSelect, running, objectRef }) {
         <boxGeometry
           args={[c.w * 0.9, c.h * (d.kind === "hmi" ? 0.64 : 0.34), 0.01]}
         />
-        <meshStandardMaterial color="#3c4b4c" />
+        <meshStandardMaterial color="#38434e" />
       </mesh>
       <Text
         position={[0, c.h * 0.31, front + 0.012]}
         fontSize={Math.min(0.085, c.w * 0.12)}
-        color="#f0f7f5"
+        color="#f6fbff"
       >
         SIEMENS
       </Text>
       <Text
         position={[0, c.h * 0.12, front + 0.012]}
         fontSize={Math.min(0.065, c.w * 0.095)}
-        color="#afc4bd"
+        color="#b8c8d1"
       >
         {c.name}
       </Text>
       {d.kind === "hmi" ? (
         <mesh position={[0, -c.h * 0.02, front + 0.01]}>
           <planeGeometry args={[c.w * 0.6, c.h * 0.32]} />
-          <meshBasicMaterial color="#426f63" />
+          <meshBasicMaterial color="#006f7b" />
         </mesh>
       ) : (
         <>
@@ -120,7 +124,8 @@ function Device({ d, selected, onSelect, running, objectRef }) {
                   <mesh
                     key={i}
                     position={[
-                      ((i - (terminalCount - 1) / 2) * c.w * 0.8) / terminalCount,
+                      ((i - (terminalCount - 1) / 2) * c.w * 0.8) /
+                        terminalCount,
                       c.h * y,
                       front,
                     ]}
@@ -128,7 +133,7 @@ function Device({ d, selected, onSelect, running, objectRef }) {
                     <boxGeometry
                       args={[(c.w * 0.5) / terminalCount, c.h * 0.1, 0.02]}
                     />
-                    <meshStandardMaterial color="#344241" />
+                    <meshStandardMaterial color="#2e3944" />
                   </mesh>
                 ),
               )}
@@ -137,7 +142,7 @@ function Device({ d, selected, onSelect, running, objectRef }) {
           {Array.from({ length: 6 }, (_, i) => (
             <mesh key={i} position={[0, c.h * (-0.16 - i * 0.032), front]}>
               <boxGeometry args={[c.w * 0.7, c.h * 0.01, 0.006]} />
-              <meshStandardMaterial color="#617471" />
+              <meshStandardMaterial color="#74818b" />
             </mesh>
           ))}
         </>
@@ -155,7 +160,7 @@ function Device({ d, selected, onSelect, running, objectRef }) {
       {selected && (
         <lineSegments>
           <edgesGeometry args={[outline]} />
-          <lineBasicMaterial color="#61bd92" />
+          <lineBasicMaterial color="#009999" />
         </lineSegments>
       )}
     </group>
@@ -639,7 +644,7 @@ function App() {
                     camera={{ position: [5, 4.5, 7], fov: 40 }}
                     onPointerMissed={() => setSelected(null)}
                   >
-                    <color attach="background" args={["#e9efec"]} />
+                    <color attach="background" args={["#edf2f5"]} />
                     <ambientLight intensity={1.8} />
                     <directionalLight
                       position={[3, 7, 4]}
@@ -652,15 +657,15 @@ function App() {
                       args={[30, 30]}
                       cellSize={0.5}
                       cellThickness={0.5}
-                      cellColor="#ccd8d1"
+                      cellColor="#d4dfe6"
                       sectionSize={2.5}
-                      sectionColor="#aebfb5"
+                      sectionColor="#aabdc9"
                       fadeDistance={22}
                     />
                     <mesh position={[0, 0, -0.42]}>
                       <boxGeometry args={[5, 0.35, 0.1]} />
                       <meshStandardMaterial
-                        color="#adb6b4"
+                        color="#b2bdc5"
                         metalness={0.8}
                         roughness={0.3}
                       />
@@ -1255,7 +1260,7 @@ function App() {
           </span>
           <span>
             Representative models <span className="footer-divider">|</span>{" "}
-            Units: mm <span className="footer-divider">|</span> v1.1
+            Units: mm <span className="footer-divider">|</span> v1.1.1
           </span>
         </footer>
       </div>

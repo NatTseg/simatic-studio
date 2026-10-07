@@ -4,6 +4,8 @@ Independent browser-based industrial device workspace built with React and Three
 
 Live app: https://nattseg.github.io/simatic-studio/
 
+The workspace uses Siemens teal (`#009999`), dark navy (`#000028`), cyan accents and cool gray surfaces. Theme tokens are in `src/style.css`.
+
 ## Run and verify
 
 ```sh
