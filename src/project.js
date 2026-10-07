@@ -1,3 +1,4 @@
+import { simulationDefaults } from "./device-runtime.js";
 const DEVICE_KINDS = new Set(["cpu", "io", "power", "drive", "hmi", "switch"]);
 const ADDRESSABLE_KINDS = new Set(["cpu", "drive", "hmi"]);
 const ETHERNET_KINDS = new Set(["cpu", "drive", "hmi", "switch"]);
@@ -113,6 +114,43 @@ export function validateProject(payload) {
     if (device.notes !== undefined) {
       result.notes = string(device.notes, `${path} notes`, 4000);
     }
+    if (device.simulation !== undefined) {
+      record(device.simulation, `${path} simulation`);
+      const defaults = simulationDefaults[device.kind];
+      result.simulation = { ...defaults };
+      for (const key of Object.keys(defaults)) {
+        const value = device.simulation[key];
+        if (value === undefined) continue;
+        if (key === "powered") {
+          if (typeof value !== "boolean")
+            fail(`${path} simulation supply`, "must be Boolean");
+        } else if (key === "controllerUid") {
+          string(value, `${path} expansion controller`, 100);
+        } else {
+          const ranges = {
+            voltage: [22.2, 26.4],
+            load: [0, 3.5],
+            frequency: [0, 50],
+            ramp: [0.2, 20],
+            enableOutput: [0, 9],
+          };
+          const [min, max] = ranges[key];
+          if (
+            typeof value !== "number" ||
+            !Number.isFinite(value) ||
+            value < min ||
+            value > max ||
+            (key === "enableOutput" && !Number.isInteger(value))
+          ) {
+            fail(
+              `${path} simulation ${key}`,
+              `must be between ${min} and ${max}`,
+            );
+          }
+        }
+        result.simulation[key] = value;
+      }
+    }
     return result;
   });
 
@@ -122,6 +160,17 @@ export function validateProject(payload) {
     fail("Connections", "must be an array of at most 1000 connections");
   }
   const deviceById = new Map(devices.map((device) => [device.uid, device]));
+  const moduleCounts = new Map();
+  for (const device of devices) {
+    const controller = device.simulation?.controllerUid;
+    if (controller) {
+      if (deviceById.get(controller)?.kind !== "cpu")
+        fail("Expansion controller", "must reference an existing CPU");
+      moduleCounts.set(controller, (moduleCounts.get(controller) || 0) + 1);
+      if (moduleCounts.get(controller) > 8)
+        fail("Expansion modules", "at most eight can be assigned to one CPU");
+    }
+  }
   const links = new Set();
   const connections = Array.from(rawConnections, (connection, index) => {
     const path = `Connection ${index + 1}`;

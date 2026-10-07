@@ -6,6 +6,7 @@ import {
   Grid,
   Line,
   TransformControls,
+  ContactShadows,
 } from "@react-three/drei";
 import {
   Box,
@@ -36,6 +37,12 @@ import {
   PanelLeftClose,
   Copy,
   X,
+  Focus,
+  Ruler,
+  Tags,
+  MousePointer2,
+  Cable,
+  ScanLine,
 } from "lucide-react";
 import "@fontsource-variable/dm-sans";
 import "@fontsource/ibm-plex-mono/latin-400.css";
@@ -44,6 +51,10 @@ import "./style.css";
 import { catalog, initial } from "./catalog.js";
 import { validateProject } from "./project.js";
 import { compileProgram, executeScan } from "./simulation.js";
+import { Device, DeviceThumbnail } from "./device-models.jsx";
+import { CameraRig, DinRail } from "./scene.jsx";
+import { SimulationPanel } from "./simulation-panel.jsx";
+import { channelLayout, settings, stepDeviceStates } from "./device-runtime.js";
 const DEFAULT_PROGRAM =
   '// Boolean scan · CPU 1214C built-in channels\n// I0.0 start; I0.1 enable; I0.2 interlock\n"Q0.0" := "I0.0";\n"Q0.1" := "I0.1" AND NOT "I0.2";';
 const channelAddress = (prefix, index) =>
@@ -56,137 +67,12 @@ function initialProject() {
     connections: [
       { from: "1", to: "2", type: "24 V DC" },
       { from: "2", to: "4", type: "PROFINET" },
+      { from: "2", to: "5", type: "Ethernet" },
+      { from: "5", to: "4", type: "Ethernet" },
+      { from: "5", to: "6", type: "Ethernet" },
     ],
     code: DEFAULT_PROGRAM,
   });
-}
-function Device({ d, selected, onSelect, running, objectRef }) {
-  const c = catalog.find((x) => x.id === d.kind);
-  const front = c.depth / 2 + 0.005;
-  const terminalCount =
-    d.kind === "switch" ? 5 : Math.max(3, Math.floor(c.w * 8));
-  const outline = useMemo(
-    () => new BoxGeometry(c.w + 0.025, c.h + 0.025, c.depth + 0.025),
-    [c],
-  );
-  useEffect(() => () => outline.dispose(), [outline]);
-  return (
-    <group
-      ref={objectRef}
-      position={d.pos}
-      rotation={d.rot}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(d.uid);
-      }}
-    >
-      <mesh castShadow>
-        <boxGeometry args={[c.w, c.h, c.depth]} />
-        <meshStandardMaterial
-          color={selected ? "#c9e8e8" : c.color}
-          roughness={0.55}
-        />
-      </mesh>
-      <mesh position={[0, c.h * 0.18, front]}>
-        <boxGeometry
-          args={[c.w * 0.9, c.h * (d.kind === "hmi" ? 0.64 : 0.34), 0.01]}
-        />
-        <meshStandardMaterial color="#38434e" />
-      </mesh>
-      <Text
-        position={[0, c.h * 0.31, front + 0.012]}
-        fontSize={Math.min(0.085, c.w * 0.12)}
-        color="#f6fbff"
-      >
-        SIEMENS
-      </Text>
-      <Text
-        position={[0, c.h * 0.12, front + 0.012]}
-        fontSize={Math.min(0.065, c.w * 0.095)}
-        color="#b8c8d1"
-      >
-        {c.name}
-      </Text>
-      {d.kind === "hmi" ? (
-        <mesh position={[0, -c.h * 0.02, front + 0.01]}>
-          <planeGeometry args={[c.w * 0.6, c.h * 0.32]} />
-          <meshBasicMaterial color="#006f7b" />
-        </mesh>
-      ) : (
-        <>
-          {[-0.4, 0.41].map((y) => (
-            <group key={y}>
-              {Array.from(
-                {
-                  length: terminalCount,
-                },
-                (_, i) => (
-                  <mesh
-                    key={i}
-                    position={[
-                      ((i - (terminalCount - 1) / 2) * c.w * 0.8) /
-                        terminalCount,
-                      c.h * y,
-                      front,
-                    ]}
-                  >
-                    <boxGeometry
-                      args={[(c.w * 0.5) / terminalCount, c.h * 0.1, 0.02]}
-                    />
-                    <meshStandardMaterial color="#2e3944" />
-                  </mesh>
-                ),
-              )}
-            </group>
-          ))}
-          {Array.from({ length: 6 }, (_, i) => (
-            <mesh key={i} position={[0, c.h * (-0.16 - i * 0.032), front]}>
-              <boxGeometry args={[c.w * 0.7, c.h * 0.01, 0.006]} />
-              <meshStandardMaterial color="#74818b" />
-            </mesh>
-          ))}
-        </>
-      )}
-      {d.kind === "cpu" && (
-        <mesh position={[-c.w * 0.3, -c.h * 0.01, front + 0.01]}>
-          <sphereGeometry args={[0.018, 8, 8]} />
-          <meshStandardMaterial
-            color={running ? "#8aff70" : "#dbb46a"}
-            emissive={running ? "#68f14e" : "#9c6e28"}
-            emissiveIntensity={0.8}
-          />
-        </mesh>
-      )}
-      {selected && (
-        <lineSegments>
-          <edgesGeometry args={[outline]} />
-          <lineBasicMaterial color="#009999" />
-        </lineSegments>
-      )}
-    </group>
-  );
-}
-import { BoxGeometry, CanvasTexture } from "three";
-function Text({ children, position, fontSize, color }) {
-  const texture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 96;
-    const ctx = canvas.getContext("2d");
-    ctx.font = "bold 48px Arial";
-    ctx.fillStyle = color;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(children, 256, 48);
-    return new CanvasTexture(canvas);
-  }, [children, color]);
-  useEffect(() => () => texture.dispose(), [texture]);
-  return (
-    <mesh position={position}>
-      <planeGeometry args={[fontSize * 6, fontSize * 1.4]} />
-      <meshBasicMaterial map={texture} transparent depthWrite={false} />
-    </mesh>
-  );
 }
 function App() {
   const [saved] = useState(() => {
@@ -225,18 +111,42 @@ function App() {
     [project, setProject] = useState(saved.data.project),
     [grid, setGrid] = useState(true),
     [libraryOpen, setLibraryOpen] = useState(false),
-    [inspectorOpen, setInspectorOpen] = useState(false);
+    [inspectorOpen, setInspectorOpen] = useState(false),
+    [dimensions, setDimensions] = useState(false),
+    [labels, setLabels] = useState(true),
+    [expanded, setExpanded] = useState(false),
+    [wires, setWires] = useState(true),
+    [cameraCommand, setCameraCommand] = useState({ action: "fit", id: 0 }),
+    [deviceStates, setDeviceStates] = useState({});
   const fileRef = useRef(),
     selectedObject = useRef(),
-    toastTimer = useRef();
+    toastTimer = useRef(),
+    assemblyObject = useRef(),
+    orbit = useRef();
+  const view = (action) => setCameraCommand((c) => ({ action, id: c.id + 1 }));
   const controllers = devices.filter((x) => x.kind === "cpu");
   const code = programs[controllerUid] || "";
   const setCode = (value) =>
     setPrograms((p) => ({ ...p, [controllerUid]: value }));
-  const compiled = useMemo(() => compileProgram(code), [code]);
+  const layout = useMemo(
+    () => channelLayout(devices, controllerUid),
+    [devices, controllerUid],
+  );
+  const compiled = useMemo(
+    () => compileProgram(code, layout),
+    [code, layout.inputCount, layout.outputCount],
+  );
   const valid = compiled.valid;
   const runtime = useRef();
-  runtime.current = { compiled, inputs };
+  runtime.current = {
+    compiled,
+    inputs,
+    outputs,
+    devices,
+    connections,
+    controllerUid,
+    running,
+  };
   const d = devices.find((x) => x.uid === selected),
     c = catalog.find((x) => x.id === d?.kind);
   const notice = (t) => {
@@ -245,8 +155,28 @@ function App() {
     toastTimer.current = setTimeout(() => setToast(""), 5000);
   };
   useEffect(() => () => clearTimeout(toastTimer.current), []);
-  const update = (p) =>
-    setDevices((a) => a.map((x) => (x.uid === selected ? { ...x, ...p } : x)));
+  const update = (p) => {
+    const next = devices.map((x) => (x.uid === selected ? { ...x, ...p } : x));
+    if (p.simulation) {
+      try {
+        validateProject({
+          version: 1,
+          project,
+          devices: next,
+          connections,
+          code,
+          programs,
+          controllerUid,
+        });
+      } catch (error) {
+        notice(error.message);
+        return;
+      }
+    }
+    setDevices(next);
+    if (d?.uid === controllerUid && p.simulation?.powered === false)
+      setRunning(false);
+  };
   const payload = () =>
     validateProject({
       version: 1,
@@ -266,18 +196,48 @@ function App() {
   }
   useEffect(() => {
     if (!running) {
-      setOutputs(Array(10).fill(false));
+      setOutputs(Array(layout.outputCount).fill(false));
       return;
     }
     setCycles(0);
     const timer = setInterval(() => {
-      const { compiled, inputs } = runtime.current;
+      const { compiled, inputs, devices, controllerUid } = runtime.current;
       if (!compiled.valid) return;
-      setOutputs((previous) => executeScan(compiled, inputs, previous));
+      const target = devices.find((d) => d.uid === controllerUid);
+      const powered = target && settings(target).powered;
+      const image = [...inputs];
+      for (const m of channelLayout(devices, controllerUid).modules) {
+        if (!settings(devices.find((d) => d.uid === m.uid)).powered)
+          image.fill(false, m.inputStart, m.inputStart + 8);
+      }
+      setOutputs((previous) =>
+        powered
+          ? executeScan(compiled, image, previous)
+          : Array(compiled.outputCount).fill(false),
+      );
       setCycles((c) => c + 1);
     }, 100);
     return () => clearInterval(timer);
-  }, [running, controllerUid]);
+  }, [running, controllerUid, layout.outputCount]);
+  const mappingKey = layout.modules.map((m) => m.uid).join(",");
+  useEffect(() => {
+    setRunning(false);
+    setInputs(Array(layout.inputCount).fill(false));
+    setOutputs(Array(layout.outputCount).fill(false));
+    setCycles(0);
+  }, [controllerUid, mappingKey, layout.inputCount, layout.outputCount]);
+  useEffect(() => {
+    const tick = () =>
+      setDeviceStates((previous) => {
+        const next = stepDeviceStates(runtime.current, previous);
+        return JSON.stringify(next) === JSON.stringify(previous)
+          ? previous
+          : next;
+      });
+    tick();
+    const timer = setInterval(tick, 100);
+    return () => clearInterval(timer);
+  }, []);
   function nextIp() {
     const used = new Set(devices.map((x) => x.ip));
     for (let n = 10; n < 255; n++) {
@@ -306,6 +266,10 @@ function App() {
         ...d,
         uid,
         name: (d.name + "_copy").slice(0, 80),
+        ...(d.kind === "io" &&
+        channelLayout(devices, settings(d).controllerUid).modules.length >= 8
+          ? { simulation: { ...settings(d), controllerUid: "" } }
+          : {}),
         ip: c.addressable ? nextIp() : undefined,
         pos: [d.pos[0] + 0.8, d.pos[1], d.pos[2] + 1],
       },
@@ -314,7 +278,15 @@ function App() {
     setSelected(uid);
   }
   function removeDevice() {
-    setDevices((a) => a.filter((x) => x.uid !== selected));
+    setDevices((a) =>
+      a
+        .filter((x) => x.uid !== selected)
+        .map((x) =>
+          x.simulation?.controllerUid === selected
+            ? { ...x, simulation: { ...x.simulation, controllerUid: "" } }
+            : x,
+        ),
+    );
     setConnections((a) =>
       a.filter((x) => x.from !== selected && x.to !== selected),
     );
@@ -353,6 +325,17 @@ function App() {
         name: item.name,
         ...(item.addressable ? { ip: nextIp() } : {}),
         ...(item.id === "cpu" ? { startup: "STOP" } : {}),
+        ...(item.id === "io"
+          ? {
+              simulation: {
+                powered: true,
+                controllerUid:
+                  controllerUid && layout.modules.length < 8
+                    ? controllerUid
+                    : "",
+              },
+            }
+          : {}),
       },
     ]);
     if (item.id === "cpu") {
@@ -380,6 +363,9 @@ function App() {
       notice("Could not export project: " + error.message);
     }
   }
+  useEffect(() => {
+    view("fit");
+  }, [devices.length]);
   function output(index) {
     return !!outputs[index];
   }
@@ -484,6 +470,14 @@ function App() {
                       "Program contains unsupported syntax",
                   );
                   setTab("Program");
+                  return;
+                }
+                if (
+                  !running &&
+                  !settings(devices.find((d) => d.uid === controllerUid))
+                    .powered
+                ) {
+                  notice("Turn on the simulation CPU’s virtual supply first");
                   return;
                 }
                 setRunning(!running);
@@ -594,17 +588,16 @@ function App() {
                 .map((x) => (
                   <div className="device-card" key={x.id}>
                     <div className={"device-art " + x.id}>
-                      <div className="device-face">
-                        <b>SIEMENS</b>
-                        <span>{x.name}</span>
-                        <i />
-                        <div className="vents">≡ ≡ ≡</div>
-                      </div>
+                      <DeviceThumbnail kind={x.id} />
                     </div>
                     <div className="card-text">
                       <span>{x.family}</span>
                       <strong>{x.name}</strong>
                       <small>{x.io}</small>
+                      <small className="device-size">
+                        {x.dimensions[0]} × {x.dimensions[1]} ×{" "}
+                        {x.dimensions[2]} mm
+                      </small>
                     </div>
                     <button title={"Add " + x.name} onClick={() => add(x)}>
                       <Plus size={16} />
@@ -615,8 +608,8 @@ function App() {
             <div className="library-footer">
               <BookOpen size={17} />
               <div>
-                Built for your next idea.
-                <small>Explore, assemble, simulate.</small>
+                Six devices. One workspace.
+                <small>Assemble · inspect · bring to life.</small>
               </div>
               <ArrowUpRight size={15} />
             </div>
@@ -627,8 +620,26 @@ function App() {
                 <div className="viewport-header">
                   <div>
                     <span className="dot" />
-                    3D assembly <span className="view-tag">Perspective</span>
+                    3D assembly{" "}
+                    <span className="view-tag">
+                      {cameraCommand.action === "front"
+                        ? "Front elevation"
+                        : "Perspective"}
+                    </span>
                   </div>
+                  <select
+                    className="assembly-picker"
+                    aria-label="Inspect assembly device"
+                    value={selected || ""}
+                    onChange={(e) => setSelected(e.target.value || null)}
+                  >
+                    <option value="">Select a device</option>
+                    {devices.map((device) => (
+                      <option key={device.uid} value={device.uid}>
+                        {device.name}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     onClick={() => {
                       setGrid(!grid);
@@ -641,47 +652,113 @@ function App() {
                 <div className="canvas">
                   <Canvas
                     shadows
-                    camera={{ position: [5, 4.5, 7], fov: 40 }}
+                    frameloop="demand"
+                    dpr={[1, 1.5]}
+                    camera={{
+                      position: [3, 2.5, 8],
+                      fov: 36,
+                      near: 0.05,
+                      far: 2500,
+                    }}
                     onPointerMissed={() => setSelected(null)}
                   >
-                    <color attach="background" args={["#edf2f5"]} />
-                    <ambientLight intensity={1.8} />
+                    <color attach="background" args={["#142d3b"]} />
+                    <ambientLight intensity={0.8} />
+                    <hemisphereLight args={["#e6f7ff", "#456373", 1.3]} />
                     <directionalLight
-                      position={[3, 7, 4]}
-                      intensity={3}
+                      position={[-3, 7, 8]}
+                      intensity={3.5}
                       castShadow
+                      shadow-mapSize={[2048, 2048]}
+                      shadow-camera-left={-8}
+                      shadow-camera-right={8}
+                      shadow-camera-top={6}
+                      shadow-camera-bottom={-6}
+                      shadow-bias={-0.0005}
+                    />
+                    <directionalLight
+                      position={[5, 2, -3]}
+                      intensity={2.5}
+                      color="#87d8e0"
                     />
                     <Grid
                       visible={grid}
-                      position={[0, -0.85, 0]}
-                      args={[30, 30]}
+                      position={[0, -1.17, 0]}
+                      args={[50, 50]}
                       cellSize={0.5}
                       cellThickness={0.5}
-                      cellColor="#d4dfe6"
+                      cellColor="#2b4959"
                       sectionSize={2.5}
-                      sectionColor="#aabdc9"
-                      fadeDistance={22}
+                      sectionColor="#3c6672"
+                      fadeDistance={16}
+                      fadeStrength={2}
                     />
-                    <mesh position={[0, 0, -0.42]}>
-                      <boxGeometry args={[5, 0.35, 0.1]} />
-                      <meshStandardMaterial
-                        color="#b2bdc5"
-                        metalness={0.8}
-                        roughness={0.3}
-                      />
-                    </mesh>
-                    {devices.map((dev) => (
-                      <Device
-                        key={dev.uid}
-                        d={dev}
-                        selected={dev.uid === selected}
-                        onSelect={setSelected}
-                        running={running && dev.uid === controllerUid}
-                        objectRef={
-                          dev.uid === selected ? selectedObject : undefined
-                        }
-                      />
-                    ))}
+                    <ContactShadows
+                      position={[0, -1.18, 0]}
+                      opacity={0.4}
+                      scale={20}
+                      blur={2.5}
+                      far={3}
+                      resolution={256}
+                      color="#060f18"
+                      frames={1}
+                      key={devices.map((d) => d.pos.join()).join()}
+                    />
+                    <DinRail />
+                    <group ref={assemblyObject}>
+                      {devices.map((dev) => (
+                        <Device
+                          key={dev.uid}
+                          d={dev}
+                          selected={dev.uid === selected}
+                          onSelect={setSelected}
+                          state={deviceStates[dev.uid]}
+                          objectRef={
+                            dev.uid === selected ? selectedObject : undefined
+                          }
+                          expanded={expanded}
+                          dimensions={dimensions}
+                          labels={labels}
+                        />
+                      ))}
+                    </group>
+                    {wires &&
+                      connections.map((n, i) => {
+                        const from = devices.find((d) => d.uid === n.from),
+                          to = devices.find((d) => d.uid === n.to);
+                        if (!from || !to) return null;
+                        const a = [
+                          from.pos[0],
+                          from.pos[1] -
+                            catalog.find((c) => c.id === from.kind).h / 2,
+                          from.pos[2] +
+                            catalog.find((c) => c.id === from.kind).depth / 2,
+                        ];
+                        const b = [
+                          to.pos[0],
+                          to.pos[1] -
+                            catalog.find((c) => c.id === to.kind).h / 2,
+                          to.pos[2] +
+                            catalog.find((c) => c.id === to.kind).depth / 2,
+                        ];
+                        const y = Math.min(a[1], b[1]) - 0.16 - i * 0.045;
+                        return (
+                          <Line
+                            key={i}
+                            points={[a, [a[0], y, a[2]], [b[0], y, b[2]], b]}
+                            color={
+                              n.type === "24 V DC"
+                                ? "#eebf71"
+                                : n.type === "Ethernet"
+                                  ? "#75a5e6"
+                                  : "#45d7b7"
+                            }
+                            lineWidth={1.8}
+                            transparent
+                            opacity={0.7}
+                          />
+                        );
+                      })}
                     {d && mode !== "select" && (
                       <TransformControls
                         key={selected}
@@ -701,14 +778,22 @@ function App() {
                       />
                     )}
                     <OrbitControls
+                      ref={orbit}
                       makeDefault
-                      minDistance={3}
-                      maxDistance={18}
+                      minDistance={0.7}
+                      maxDistance={2000}
+                      maxPolarAngle={Math.PI * 0.86}
+                    />
+                    <CameraRig
+                      command={cameraCommand}
+                      assembly={assemblyObject}
+                      selectedObject={selectedObject}
+                      orbit={orbit}
                     />
                   </Canvas>
                   <div className="canvas-toolbar">
                     {[
-                      [Move, "select", "Select"],
+                      [MousePointer2, "select", "Select"],
                       [Move, "translate", "Move"],
                       [Rotate3D, "rotate", "Rotate"],
                     ].map(([Icon, m, t]) => (
@@ -739,9 +824,70 @@ function App() {
                       <Maximize size={17} />
                     </button>
                   </div>
+                  <div className="scene-options">
+                    <button title="Fit all devices" onClick={() => view("fit")}>
+                      <Maximize size={15} /> Fit
+                    </button>
+                    <button
+                      title="Focus selected device"
+                      disabled={!d}
+                      onClick={() => view("focus")}
+                    >
+                      <Focus size={15} /> Focus
+                    </button>
+                    <button
+                      title="Front elevation"
+                      onClick={() => view("front")}
+                    >
+                      <ScanLine size={15} /> Front
+                    </button>
+                    <span />
+                    <button
+                      title="Show dimensions"
+                      className={dimensions ? "chosen" : ""}
+                      aria-pressed={dimensions}
+                      onClick={() => setDimensions(!dimensions)}
+                    >
+                      <Ruler size={15} />
+                    </button>
+                    <button
+                      title="Show device labels"
+                      className={labels ? "chosen" : ""}
+                      aria-pressed={labels}
+                      onClick={() => setLabels(!labels)}
+                    >
+                      <Tags size={15} />
+                    </button>
+                    <button
+                      title="Show connection paths"
+                      className={wires ? "chosen" : ""}
+                      aria-pressed={wires}
+                      onClick={() => setWires(!wires)}
+                    >
+                      <Cable size={15} />
+                    </button>
+                  </div>
+                  <button
+                    className={"exploded-button " + (expanded ? "chosen" : "")}
+                    aria-pressed={expanded}
+                    onClick={() => setExpanded(!expanded)}
+                  >
+                    <Layers size={14} />
+                    {expanded ? "Assembled view" : "Exploded details"}
+                  </button>
+                  {d && (
+                    <div className="selected-caption">
+                      <span>{c.family}</span>
+                      <strong>{c.name}</strong>
+                      <small>
+                        {c.dimensions.join(" × ")} mm
+                        {c.id === "hmi" ? " · mounting depth" : ""}
+                      </small>
+                    </div>
+                  )}
                   <div className="scene-label">
                     <span className="dot" />
-                    ASSEMBLY_01 <span>DIN rail · 35 mm</span>
+                    VIRTUAL ASSEMBLY <span>DIN rail · 35 mm</span>
                   </div>
                   <div className="axis">
                     <b className="y">Y</b>
@@ -789,9 +935,7 @@ function App() {
                           <span className="mono">{dev.ip || "—"}</span>
                           <span>
                             <i className="status-dot" />
-                            {running && dev.uid === controllerUid
-                              ? "Simulated"
-                              : "Project only"}
+                            {deviceStates[dev.uid]?.status || "Ready"}
                           </span>
                         </div>
                       );
@@ -949,13 +1093,14 @@ function App() {
                   ))}
                 </div>
                 <div className="info-note">
-                  Supported: 14 inputs (I0.0–I1.5), 10 outputs (Q0.0–Q1.1),
-                  TRUE/FALSE, NOT, AND, XOR, OR, parentheses and sequential
-                  output assignments. Outputs update on a nominal 100 ms browser
-                  interval. These are this simulator’s project addresses, not
-                  verified hardware defaults. Siemens firmware, real PLC timing,
-                  safety logic and TIA Portal compilation are not emulated.
-                  Programs are not downloadable to hardware.
+                  Supported: {layout.inputCount} inputs and {layout.outputCount}{" "}
+                  outputs for the selected CPU, including assigned SM 1223
+                  modules, TRUE/FALSE, NOT, AND, XOR, OR, parentheses and
+                  sequential output assignments. Outputs update on a nominal 100
+                  ms browser interval. These are this simulator’s project
+                  addresses, not verified hardware defaults. Siemens firmware,
+                  real PLC timing, safety logic and TIA Portal compilation are
+                  not emulated. Programs are not downloadable to hardware.
                 </div>
               </div>
             ) : (
@@ -1012,9 +1157,11 @@ function App() {
                   3D placement and rotation, project topology, editable device
                   parameters, separate CPU program sources, a bounded Boolean
                   scan simulator, and validated local project import/export.
-                  Electrical behavior, PROFINET communication, drive control,
-                  HMI screens, exact CAD models and Siemens firmware require
-                  device-specific implementations and validation.
+                  Live channel indicators, assigned expansion I/O, a teaching
+                  model for drive frequency ramps, a virtual HMI screen,
+                  power-supply test loads and Ethernet link states are included.
+                  Electrical circuit solving, real protocols, exact CAD models
+                  and Siemens firmware remain outside this model.
                 </p>
                 <a
                   className="doc-row"
@@ -1052,21 +1199,19 @@ function App() {
               <>
                 <div className="selected-device">
                   <div className="mini-device">
-                    <Box size={27} />
+                    <DeviceThumbnail kind={d.kind} />
                   </div>
                   <div>
                     <small>{c.family}</small>
                     <h3>{c.name}</h3>
                     <span>
                       <i className="status-dot" />{" "}
-                      {running && d.uid === controllerUid
-                        ? "Simulation running"
-                        : "Project configuration"}
+                      {deviceStates[d.uid]?.status || "Ready"}
                     </span>
                   </div>
                 </div>
                 <div className="inspector-tabs">
-                  {["Properties", "Parameters"].map((t) => (
+                  {["Properties", "Parameters", "Simulation"].map((t) => (
                     <button
                       className={inspector === t ? "active" : ""}
                       key={t}
@@ -1076,7 +1221,21 @@ function App() {
                     </button>
                   ))}
                 </div>
-                {inspector === "Properties" ? (
+                {inspector === "Simulation" ? (
+                  <SimulationPanel
+                    device={d}
+                    state={deviceStates[d.uid]}
+                    controllers={controllers}
+                    controllerUid={controllerUid}
+                    layout={layout}
+                    update={update}
+                    setInputs={setInputs}
+                    inputs={inputs}
+                    outputs={outputs}
+                    running={running}
+                    cycles={cycles}
+                  />
+                ) : inspector === "Properties" ? (
                   <>
                     <div className="property-section">
                       <h4>GENERAL</h4>
@@ -1260,7 +1419,7 @@ function App() {
           </span>
           <span>
             Representative models <span className="footer-divider">|</span>{" "}
-            Units: mm <span className="footer-divider">|</span> v1.1.1
+            Units: mm <span className="footer-divider">|</span> v1.2.0
           </span>
         </footer>
       </div>

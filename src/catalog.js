@@ -82,7 +82,7 @@ export const initial = [
   {
     uid: "1",
     kind: "power",
-    pos: [-1.8, 0, 0],
+    pos: [-2.82, 0, -0.1],
     rot: [0, 0, 0],
     name: "Power supply",
     ip: "",
@@ -90,7 +90,7 @@ export const initial = [
   {
     uid: "2",
     kind: "cpu",
-    pos: [-0.7, 0, 0],
+    pos: [-1.9, 0, -0.225],
     rot: [0, 0, 0],
     name: "PLC_1",
     ip: "192.168.0.10",
@@ -98,18 +98,35 @@ export const initial = [
   {
     uid: "3",
     kind: "io",
-    pos: [0.25, 0, 0],
+    pos: [-1.125, 0, -0.225],
     rot: [0, 0, 0],
     name: "Digital I/O",
     ip: "",
+    simulation: { powered: true, controllerUid: "2" },
   },
   {
     uid: "4",
     kind: "drive",
-    pos: [1.35, 0, 0],
+    pos: [0.3, 0, 0.2],
     rot: [0, 0, 0],
     name: "Drive_1",
     ip: "192.168.0.20",
+  },
+  {
+    uid: "5",
+    kind: "switch",
+    pos: [-0.53, 0, -0.165],
+    rot: [0, 0, 0],
+    name: "Ethernet switch",
+    ip: "",
+  },
+  {
+    uid: "6",
+    kind: "hmi",
+    pos: [2.1, 0.05, 0.25],
+    rot: [0, 0, 0],
+    name: "Operator panel",
+    ip: "192.168.0.30",
   },
 ];
 
@@ -142,7 +159,7 @@ const capabilities = {
     dimensions: [73, 173, 160],
     interface: "PROFINET-PN · 6 DI / 2 DO / 1 AI / 1 AO",
     reference:
-      "3 AC 380–480 V input. Rated 0.75 kW at low overload / 0.55 kW at high overload. Drive control, faults, motor dynamics and commissioning are not simulated.",
+      "3 AC 380–480 V input. Rated 0.75 kW at low overload / 0.55 kW at high overload. The workspace provides a virtual frequency ramp; firmware, motor dynamics and commissioning are not emulated.",
     sourcePage: "1",
     sourceDate: "2026-10-07",
   },

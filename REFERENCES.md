@@ -81,3 +81,11 @@ These checks cover selected exact-order datasheet facts and the cited SCALANCE m
 App address fields and connections describe a virtual project. They do not configure, program or commission hardware. The Boolean interpreter implements only its stated syntax subset; it is not a Siemens compiler or firmware emulator. Source-backed dimensions provide reference proportions while visual housing detail remains approximate.
 
 Direct Industry Mall, SiePortal and Siemens support-page requests were inaccessible during these checks (HTTP 403). The official datasheet PDF endpoint and linked SCALANCE manual PDF were accessible. The S7-1200 system manual was not successfully retrieved and read in this verification pass; no process-address defaults or complete firmware behavior are claimed from it.
+
+## v1.2 procedural models and runtime conventions
+
+The six exact-order datasheet endpoints were requested again on 2026-10-07 during the modeling update. CPU1214C, SM1223, KTP700 and XB005 were accessible; SITOP and G120C retrieval failed in this pass, so their previously documented checks remain the evidence for dimensions and ratings. No additional firmware behavior is inferred from datasheets. KTP700's eight function keys and 154.1 × 85.9 mm active display are listed on datasheet p. 1; the updated model uses that display size.
+
+Housing detail is procedurally drawn, not imported manufacturer CAD. Screw spacing, socket geometry, covers, ventilation, rail attachment and drive readout are representative. Exploded view separates visual components for inspection; it is not a disassembly instruction. HMI rear geometry remains approximate because 39 mm denotes mounting depth.
+
+Runtime rules are authored teaching conventions: consecutively packed expansion bits, a linear drive frequency ramp, a sample HMI overview, switch connection-count indicators and an automatically recovering PSU demo trip above 2.5 A. They do not reproduce electrical protection curves, protocols, telegrams, scan timing, firmware or physical machine behavior. Power connections remain topology drawings; every device uses its own virtual supply toggle.
