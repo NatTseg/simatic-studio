@@ -164,11 +164,11 @@ const capabilities = {
     sourceDate: "2026-10-07",
   },
   hmi: {
-    dimensions: [214, 158, 39],
+    dimensions: [214, 158, 45.2],
     interface: "Industrial Ethernet · S7 communication",
     reference:
-      "7-inch panel, 24 V DC. PROFINET network support; no PROFINET IO protocol endpoint. Front housing 214 × 158 mm; 39 mm is mounting depth, not verified full housing depth.",
-    sourcePage: "1–2, 6–7",
+      "7-inch panel, 24 V DC. Industrial Ethernet and S7 communication; no PROFINET IO endpoint. 214 × 158 mm front; 39 mm mounting depth plus 6.2 mm front projection (45.2 mm overall). Rear housing 196 × 140 mm. 8 function keys, USB Type A and a 2-pin supply.",
+    sourcePage: "1–2, 6–7; Basic Panels manual p. 111",
     sourceDate: "2026-09-28",
   },
   switch: {

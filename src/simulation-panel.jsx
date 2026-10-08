@@ -29,7 +29,7 @@ export function SimulationPanel({
           key={i}
           className={v ? "bit active" : "bit"}
           aria-label={`${address(prefix, offset + i)} ${v ? "TRUE" : "FALSE"}`}
-          disabled={!editable || !config.powered}
+          disabled={!editable || !state.powered}
           onClick={() =>
             setInputs((a) => a.map((x, j) => (j === offset + i ? !x : x)))
           }
@@ -79,6 +79,29 @@ export function SimulationPanel({
           {bits(state.inputs || Array(14).fill(false), "I", 0, activeCpu)}
           <h4>DIGITAL OUTPUTS</h4>
           {bits(state.outputs || Array(10).fill(false), "Q", 0)}
+          <h4>
+            ANALOG INPUTS <span>0–10 V</span>
+          </h4>
+          {[0, 1].map((i) => (
+            <label key={i}>
+              AI {i}
+              <b>{(state.analog?.[i] || 0).toFixed(1)} V</b>
+              <input
+                aria-label={`Analog input ${i}`}
+                type="range"
+                min="0"
+                max="10"
+                step="0.1"
+                value={config[`analog${i}`]}
+                disabled={!state.powered}
+                onChange={(e) => patch({ [`analog${i}`]: +e.target.value })}
+              />
+            </label>
+          ))}
+          <p className="panel-hint">
+            Analog sensor readings are modeled separately from the Boolean
+            program.
+          </p>
         </>
       )}
       {device.kind === "io" && (
@@ -172,8 +195,8 @@ export function SimulationPanel({
             />
           </div>
           <p className="panel-hint">
-            2.5 A rated. The demo trips above this load and recovers when
-            reduced. Supply settings operate independently of wiring.
+            2.5 A rated. The demo trips above this test load and recovers when
+            reduced. Devices connected to this supply lose power when it trips.
           </p>
         </>
       )}
@@ -225,8 +248,8 @@ export function SimulationPanel({
             </select>
           </label>
           <p className="panel-hint">
-            Add a CPU → drive PROFINET IO relationship, run that CPU and turn on
-            the enable bit. The linear frequency ramp is a teaching model.
+            Connect an Ethernet path and CPU → drive PROFINET IO assignment, run
+            the controller and turn on the enable bit.
           </p>
         </>
       )}

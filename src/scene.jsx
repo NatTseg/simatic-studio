@@ -19,12 +19,15 @@ export function CameraRig({ command, assembly, selectedObject, orbit }) {
     const tan = Math.tan(verticalFov / 2);
     const aspect = size.width / size.height;
     const distance =
-      Math.max(extent.y / 2 / tan, extent.x / 2 / tan / aspect) * 1.2 +
+      Math.max(extent.y / 2 / tan, extent.x / 2 / tan / aspect) *
+        (command.padding || 1.2) +
       extent.z;
     const direction =
-      command.action === "front"
-        ? new Vector3(0, 0, 1)
-        : new Vector3(0.42, 0.26, 1).normalize();
+      command.action === "rear"
+        ? new Vector3(0.3, 0.18, -1).normalize()
+        : command.action === "front"
+          ? new Vector3(0, 0, 1)
+          : new Vector3(0.52, 0.3, 1).normalize();
     camera.position.copy(
       center.clone().addScaledVector(direction, Math.max(1.8, distance)),
     );
@@ -36,9 +39,9 @@ export function CameraRig({ command, assembly, selectedObject, orbit }) {
   return null;
 }
 
-export function DinRail({ length = 6.4 }) {
+export function DinRail({ length = 3.9 }) {
   return (
-    <group position={[0, 0, -0.61]}>
+    <group position={[-1.08, 0, -0.61]}>
       <mesh receiveShadow>
         <boxGeometry args={[length, 0.35, 0.025]} />
         <meshStandardMaterial

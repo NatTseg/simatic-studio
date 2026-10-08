@@ -58,7 +58,10 @@ test("drive ramps only for a powered, running controller with assigned IO and en
   const outputs = [false, true];
   const input = frame([cpu, drive], {
     outputs,
-    connections: [{ from: "plc", to: "drive", type: "PROFINET" }],
+    connections: [
+      { from: "plc", to: "drive", type: "PROFINET" },
+      { from: "plc", to: "drive", type: "Ethernet" },
+    ],
   });
   let state = stepDeviceStates(input);
   assert.equal(state.drive.enabled, true);
@@ -168,4 +171,115 @@ test("saved model settings round-trip and reject invalid ranges and missing modu
       ),
     /eight/,
   );
+});
+
+test("upstream supply loss and overload remove controller, backplane and HMI power", () => {
+  const io = device("io", "io", { controllerUid: "plc" });
+  const hmi = device("hmi", "hmi");
+  const links = [
+    { from: "psu", to: "plc", type: "24 V DC" },
+    { from: "psu", to: "hmi", type: "24 V DC" },
+    { from: "plc", to: "hmi", type: "Ethernet" },
+  ];
+  for (const config of [{ powered: false }, { load: 3 }]) {
+    const state = stepDeviceStates(
+      frame([device("psu", "power", config), cpu, io, hmi], {
+        connections: links,
+        outputs: [true],
+      }),
+    );
+    assert.equal(state.plc.powered, false);
+    assert.equal(state.plc.running, false);
+    assert.equal(state.plc.outputs.some(Boolean), false);
+    assert.equal(state.io.powered, false);
+    assert.equal(state.hmi.connected, false);
+  }
+  const recovered = stepDeviceStates(
+    frame([device("psu", "power", { load: 2 }), cpu, io, hmi], {
+      connections: links,
+      outputs: [true],
+    }),
+  );
+  assert.equal(recovered.plc.running, true);
+  assert.equal(recovered.io.powered, true);
+  assert.equal(recovered.hmi.connected, true);
+});
+
+test("logical drive assignment requires a powered physical Ethernet path", () => {
+  const sw = device("switch", "switch"),
+    drive = device("drive", "drive");
+  const assignment = { from: "plc", to: "drive", type: "PROFINET" };
+  const links = [
+    assignment,
+    { from: "plc", to: "switch", type: "Ethernet" },
+    { from: "switch", to: "drive", type: "Ethernet" },
+  ];
+  const input = frame([cpu, sw, drive], {
+    connections: links,
+    outputs: [true],
+  });
+  assert.equal(stepDeviceStates(input).drive.enabled, true);
+  assert.equal(
+    stepDeviceStates({ ...input, connections: [assignment] }).drive.status,
+    "Network disconnected",
+  );
+  assert.equal(
+    stepDeviceStates({
+      ...input,
+      devices: [cpu, device("switch", "switch", { powered: false }), drive],
+    }).drive.enabled,
+    false,
+  );
+});
+
+test("single-port endpoints cannot act as transit switches and cyclic power links fail closed", () => {
+  const other = device("other", "cpu"),
+    hmi = device("panel", "hmi");
+  const state = stepDeviceStates(
+    frame([cpu, other, hmi], {
+      connections: [
+        { from: "plc", to: "other", type: "Ethernet" },
+        { from: "other", to: "panel", type: "Ethernet" },
+      ],
+    }),
+  );
+  assert.equal(state.panel.connected, false);
+  const cycle = stepDeviceStates(
+    frame([cpu, other], {
+      connections: [
+        { from: "plc", to: "other", type: "24 V DC" },
+        { from: "other", to: "plc", type: "24 V DC" },
+      ],
+    }),
+  );
+  assert.equal(cycle.plc.powered, false);
+  assert.equal(cycle.other.powered, false);
+});
+
+test("CPU analog readings are bounded sensor settings and disappear on power loss", () => {
+  const model = device("plc", "cpu", { analog0: 3.2, analog1: 10 });
+  const source = {
+    project: "Sensors",
+    code: "",
+    devices: [model],
+    connections: [],
+  };
+  const project = validateProject(source);
+  assert.deepEqual(
+    stepDeviceStates(frame(project.devices)).plc.analog,
+    [3.2, 10],
+  );
+  assert.deepEqual(
+    stepDeviceStates(
+      frame([device("plc", "cpu", { powered: false, analog0: 3.2 })]),
+    ).plc.analog,
+    [0, 0],
+  );
+  for (const value of [-1, 10.1, NaN])
+    assert.throws(() =>
+      validateProject({
+        ...source,
+        devices: [device("plc", "cpu", { analog0: value })],
+      }),
+    );
 });

@@ -1,6 +1,6 @@
 // Educational device states. These rules do not execute device firmware or solve wiring.
 export const simulationDefaults = {
-  cpu: { powered: true },
+  cpu: { powered: true, analog0: 0, analog1: 0 },
   io: { powered: true, controllerUid: "" },
   power: { powered: true, voltage: 24, load: 0.8 },
   drive: { powered: true, frequency: 35, ramp: 3, enableOutput: 0 },
@@ -32,6 +32,62 @@ export function channelLayout(devices, controllerUid) {
   };
 }
 
+// A connected supply owns the 24 V control power; unconnected devices use their
+// local bench supply. These are project fault-injection rules, not circuit solving.
+export function powerAvailable(devices, connections, uid, visited = new Set()) {
+  const d = devices.find((item) => item.uid === uid);
+  if (!d || !settings(d).powered || visited.has(uid)) return false;
+  visited.add(uid);
+  if (d.kind === "power") return settings(d).load <= 2.5;
+  const feeders = connections.filter(
+    (c) => c.type === "24 V DC" && c.to === uid,
+  );
+  if (feeders.length)
+    return feeders.some((c) =>
+      powerAvailable(devices, connections, c.from, new Set(visited)),
+    );
+  if (d.kind === "io" && settings(d).controllerUid)
+    return powerAvailable(
+      devices,
+      connections,
+      settings(d).controllerUid,
+      visited,
+    );
+  return true;
+}
+
+export const portCapacity = { cpu: 1, drive: 2, hmi: 1, switch: 5 };
+
+export function ethernetPath(devices, connections, from, to) {
+  if (
+    !from ||
+    !to ||
+    !powerAvailable(devices, connections, from) ||
+    !powerAvailable(devices, connections, to)
+  )
+    return false;
+  const byId = new Map(devices.map((d) => [d.uid, d]));
+  const reached = new Set([from]);
+  const queue = [from];
+  while (queue.length) {
+    const uid = queue.shift();
+    if (uid === to) return true;
+    // Only switches and the drive's integrated two-port interface forward links.
+    if (uid !== from && !["switch", "drive"].includes(byId.get(uid)?.kind))
+      continue;
+    for (const c of connections.filter(
+      (c) => c.type === "Ethernet" && (c.from === uid || c.to === uid),
+    )) {
+      const peer = c.from === uid ? c.to : c.from;
+      if (!reached.has(peer) && powerAvailable(devices, connections, peer)) {
+        reached.add(peer);
+        queue.push(peer);
+      }
+    }
+  }
+  return false;
+}
+
 export function stepDeviceStates(
   { devices, connections, controllerUid, running, inputs, outputs },
   previous = {},
@@ -40,15 +96,19 @@ export function stepDeviceStates(
   const byId = new Map(devices.map((d) => [d.uid, d]));
   const layout = channelLayout(devices, controllerUid);
   const controllerActive =
-    running && settings(byId.get(controllerUid) || { kind: "cpu" }).powered;
+    running && powerAvailable(devices, connections, controllerUid);
   const result = {};
   for (const d of devices) {
     const config = settings(d);
     const state = {
-      powered: config.powered,
+      powered:
+        d.kind === "power"
+          ? config.powered
+          : powerAvailable(devices, connections, d.uid),
       status: config.powered ? "Ready" : "Power off",
     };
     if (d.kind === "cpu") {
+      state.analog = state.powered ? [config.analog0, config.analog1] : [0, 0];
       state.running = controllerActive && d.uid === controllerUid;
       state.status = !state.powered
         ? "Power off"
@@ -97,6 +157,7 @@ export function stepDeviceStates(
         state.powered &&
         controllerActive &&
         assigned &&
+        ethernetPath(devices, connections, controllerUid, d.uid) &&
         !!outputs[config.enableOutput];
       const target = state.enabled ? config.frequency : 0;
       const before = previous[d.uid]?.frequency || 0;
@@ -111,11 +172,13 @@ export function stepDeviceStates(
         ? "Power off"
         : !assigned
           ? "Assign PROFINET IO"
-          : state.enabled
-            ? "Running"
-            : state.frequency > 0
-              ? "Ramping down"
-              : "Ready";
+          : !ethernetPath(devices, connections, controllerUid, d.uid)
+            ? "Network disconnected"
+            : state.enabled
+              ? "Running"
+              : state.frequency > 0
+                ? "Ramping down"
+                : "Ready";
     } else if (d.kind === "switch") {
       state.links = connections.filter(
         (c) => c.type === "Ethernet" && (c.from === d.uid || c.to === d.uid),
@@ -125,7 +188,11 @@ export function stepDeviceStates(
         .map(
           (c) =>
             state.powered &&
-            settings(byId.get(c.from === d.uid ? c.to : c.from)).powered,
+            powerAvailable(
+              devices,
+              connections,
+              c.from === d.uid ? c.to : c.from,
+            ),
         );
       state.overflow = state.links.length > 5;
       state.status = !state.powered
@@ -134,28 +201,12 @@ export function stepDeviceStates(
           ? "Port capacity exceeded"
           : `${state.ports.filter(Boolean).length} / 5 links`;
     } else if (d.kind === "hmi") {
-      // Connectivity is computed from physical Ethernet links, including switches.
-      const reached = new Set([d.uid]);
-      for (let pass = 0; pass < devices.length; pass++) {
-        let changed = false;
-        for (const c of connections.filter((c) => c.type === "Ethernet")) {
-          if (
-            !settings(byId.get(c.from)).powered ||
-            !settings(byId.get(c.to)).powered
-          )
-            continue;
-          if (reached.has(c.from) && !reached.has(c.to)) {
-            reached.add(c.to);
-            changed = true;
-          }
-          if (reached.has(c.to) && !reached.has(c.from)) {
-            reached.add(c.from);
-            changed = true;
-          }
-        }
-        if (!changed) break;
-      }
-      state.connected = state.powered && reached.has(controllerUid);
+      state.connected = ethernetPath(
+        devices,
+        connections,
+        d.uid,
+        controllerUid,
+      );
       state.running = state.connected && controllerActive;
       state.inputs = state.connected ? inputs.slice(0, 14) : [];
       state.outputs = state.running ? outputs.slice(0, 10) : [];
@@ -167,7 +218,10 @@ export function stepDeviceStates(
             : "PLC STOP"
           : "No PLC Ethernet path";
     }
-    result[d.uid] = state;
+    result[d.uid] =
+      JSON.stringify(state) === JSON.stringify(previous[d.uid])
+        ? previous[d.uid]
+        : state;
   }
   return result;
 }

@@ -133,6 +133,8 @@ export function validateProject(payload) {
             frequency: [0, 50],
             ramp: [0.2, 20],
             enableOutput: [0, 9],
+            analog0: [0, 10],
+            analog1: [0, 10],
           };
           const [min, max] = ranges[key];
           if (
