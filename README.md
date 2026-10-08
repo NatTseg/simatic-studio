@@ -1,11 +1,31 @@
 # SIMATIC Studio
 
-Live app: https://nattseg.github.io/simatic-studio/
+An independent browser workbench for exploring Siemens automation products in 3D and testing small controller programs.
 
-This branch hosts the production build. Editable React/Three.js code and regression tests are in the [source branch](https://github.com/NatTseg/simatic-studio/tree/source).
+**Live app:** https://nattseg.github.io/simatic-studio/
 
-Version 1.2 adds six distinct, detailed device models, an illuminated 3D workspace, close-up and front views, dimensions, connection paths and exploded details. The default assembly includes the CPU, SM1223, SITOP supply, G120C drive, KTP700 panel and XB005 switch. Mobile drawers and an assembly selector make every device accessible on a phone.
+The `source` branch contains the editable React / Three.js / Vite app. `main` contains the generated GitHub Pages site.
 
-The Simulation inspector provides live PLC LEDs and expansion channels, a virtual drive frequency ramp, a live HMI overview, power-supply test loads and Ethernet link states. Device settings save in your browser and export as JSON. Existing saved projects continue to load.
+## v2.0
 
-This is an independent engineering prototype. Housing details and terminal placement are representative; device behavior follows authored teaching rules. It does not execute Siemens firmware, communicate with or program hardware, solve wiring, reproduce drive physics or emulate device protection curves. The drive readout is virtual and HMI depth is based on mounting depth. See [REFERENCES.md](REFERENCES.md) for evidence and model limits.
+- A larger assembly workspace and isolated product inspection, front/rear views, three-axis dimensions and opening covers.
+- Six product-specific models rebuilt from Siemens reference photographs and drawings; manufacturer photos in the library and reference page.
+- Live digital and analog inputs, controller outputs, scan stepping, drive ramps, sample HMI and supply fault injection.
+- Physical Ethernet topology and port limits, logical PROFINET IO assignment and downstream control-power behavior.
+- Program examples, line-numbered editor, filtered process image and device activity log.
+- Validated local autosave, JSON import/export, forty-step undo/redo and responsive phone controls.
+- On-demand 3D rendering and a separately loaded 3D workspace bundle.
+
+## Development
+
+```sh
+npm ci
+npm run dev
+npm test
+npm run build
+npm run preview
+```
+
+Use `dist/` as the static deployment output. Vite uses a relative base so the build works under the repository's GitHub Pages path.
+
+See [REFERENCES.md](REFERENCES.md) for exact order numbers, primary sources, photo attribution and model limits. The housings are procedural reconstructions, not Siemens CAD; the runtime is an educational simulation, not firmware or a physical electrical/motor model.

@@ -1,91 +1,38 @@
-# Verified device references
+# Product references and model coverage — v2.0
 
-Source checks completed on 2026-10-07 for the exact order numbers below. All six official Siemens datasheet URLs returned PDFs, and the cited pages were read. Dates are the dates printed in the sheet footers; they are not firmware versions or separate revision identifiers. Source PDFs remain on Siemens's servers and are not bundled with this app.
+Checked against official Siemens publications on 2026-10-07. All dimensions below are W × H × D, in mm. Product photos in `public/products/` are extracted from the exact-order Siemens datasheets linked below. Siemens retains the image copyright; the sheets mark these photographs as figures similar to the product. They are displayed as manufacturer references, not photographs of the simulator's geometry.
 
-## Datasheets and dimensions
+| Product | Order number and official datasheet | Model dimensions |
+| --- | --- | --- |
+| CPU 1214C DC/DC/DC | [6ES7214-1AG40-0XB0](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6ES7214-1AG40-0XB0&language=en&caller=SIOS) | 110 × 100 × 75 |
+| SM 1223 8DI / 8DO | [6ES7223-1BH32-0XB0](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6ES7223-1BH32-0XB0&language=en&caller=SIOS) | 45 × 100 × 75 |
+| SITOP PSU100C | [6EP1332-5BA00](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6EP1332-5BA00&language=en&caller=SIOS) | 45 × 80 × 100 |
+| SINAMICS G120C PN | [6SL3210-1KE12-3UF2](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6SL3210-1KE12-3UF2&language=en&caller=SIOS) | 73 × 173 × 160 |
+| KTP700 Basic PN | [6AV2123-2GB03-0AX0](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6AV2123-2GB03-0AX0&language=en&caller=SIOS) | 214 × 158 × 45.2 overall; 39 mounting |
+| SCALANCE XB005 | [6GK5005-0BA00-1AB2](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6GK5005-0BA00-1AB2&language=en&caller=SIOS) | 45 × 100 × 87 |
 
-Dimensions are width × height × depth in millimeters unless noted. These are reference dimensions, not a claim that the app reproduces every housing detail, terminal, mounting feature or clearance.
+## Mechanical references
 
-| Device and exact order | Official datasheet | Footer date | Dimensions and page |
-| --- | --- | --- | --- |
-| CPU 1214C DC/DC/DC — `6ES7214-1AG40-0XB0` | [Siemens PDF](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6ES7214-1AG40-0XB0&language=en&caller=SIOS) | 2026-09-28 | 110 × 100 × 75; p. 7/8 |
-| SM 1223 — `6ES7223-1BH32-0XB0` | [Siemens PDF](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6ES7223-1BH32-0XB0&language=en&caller=SIOS) | 2026-09-28 | 45 × 100 × 75; p. 3/4 |
-| SITOP PSU100C — `6EP1332-5BA00` | [Siemens PDF](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6EP1332-5BA00&language=en&caller=SIOS) | 2026-10-02 | 45 × 80 × 100; p. 3/5 |
-| SINAMICS G120C — `6SL3210-1KE12-3UF2` | [Siemens PDF](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6SL3210-1KE12-3UF2&language=en&caller=SIOS) | 2026-10-07 | 73 × 173 × 160; p. 1/1, reordered from the sheet's H × W × D |
-| KTP700 Basic — `6AV2123-2GB03-0AX0` | [Siemens PDF](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6AV2123-2GB03-0AX0&language=en&caller=SIOS) | 2026-09-28 | Front housing 214 × 158; mounting depth 39; p. 7/7 |
-| SCALANCE XB005 — `6GK5005-0BA00-1AB2` | [Siemens PDF](https://apim.industry.siemens.cloud/ted/datasheet?format=pdf&mlfbs=6GK5005-0BA00-1AB2&language=en&caller=SIOS) | 2026-10-02 | 45 × 100 × 87; width p. 1/3, height/depth p. 2/3 |
+- [CPU 1214C connector drawing and pin locations](https://docs.tia.siemens.cloud/r/simatic_s7_1200_manual_collection_enus_20/technical-specifications/cpu-1214c/cpu-1214c-wiring-diagrams), S7-1200 manual V20, November 2024: DC/DC/DC X10 has 20 terminals, X11 has three analog-input terminals, X12 has 12 output terminals. One RJ45 port. Closed gray covers and center status/channel strip follow the datasheet photograph.
+- [SM 1223 DC input/output drawings](https://docs.tia.siemens.cloud/r/simatic_s7_1200_manual_collection_enus_20/technical-specifications/digital-signal-modules-sms/sm-1223-digital-input/output-v-dc-wiring-diagrams), same manual: four seven-position connector groups for the 8DI/8DO model; no Ethernet interface.
+- [SITOP PSU100C operating instructions](https://cache.industry.siemens.com/dl/files/808/65647808/att_77988/v1/PSU100C_Handbuch_englisch_en-US.pdf), June 2013, p. 15, figure 2-8: narrow left terminal groups, front adjustment and vertical product strip, top ventilation. The reference photo shows charcoal plastic and a teal strip. Envelope dimensions use the current datasheet; the drawing also shows 106.5 mm including protruding mounting features.
+- [SINAMICS G120C operating instructions](https://cache.industry.siemens.com/dl/files/769/109744769/att_912473/v1/G120C_op_instr_1116_en-US.pdf), November 2016, pp. 48–50: housing, removable operator-panel cover, top fan/vents and mounting features. Historical frame dimensions differ from the current exact-order datasheet; the current datasheet provides the model envelope. No optional BOP/IOP display is modeled. The drive's frequency appears in the simulator UI, not as an invented hardware LCD.
+- [Basic Panels 2nd Generation operating instructions](https://cache.industry.siemens.com/dl/files/350/90114350/att_904652/v2/HWBasicPanels2GenUS_en-US.pdf), October 2024, p. 111, §8.6.2: KTP700 PN front 214 × 158, rear 196 × 140, mounting depth 39 plus front projection 6.2. Rear Ethernet, USB Type A and 2-pin supply. Datasheet p. 1 gives 154.1 × 85.9 active display and eight function keys without LEDs.
+- [SCALANCE XB-000 operating instructions](https://cache.industry.siemens.com/dl/files/806/32983806/att_1092422/v1/BA_SCALANCE-XB-000_76.pdf), January 2022: unmanaged XB005, no management IP or Web/SNMP/PROFINET diagnostics. The datasheet photo establishes the one + two + two socket arrangement, gray housing and bottom power connector.
 
-**KTP700 depth distinction:** 39 mm is explicitly the *mounting depth*. The datasheet does not identify that value as the total exterior housing depth. Its mounting cutout is 198 × 142 mm. Any simplified 3D depth derived from 39 mm remains approximate.
+## What fidelity means here
 
-## Electrical and interface facts
+The models are procedural reconstructions, not manufacturer CAD. They reproduce the product silhouette, principal proportions, recognizable cover divisions, connector groups, ventilation, labels and mounting features. Small shapes, screw spacing, inscriptions and material appearance remain approximations. Opening covers is an inspection visualization, not a disassembly procedure. HMI screen content is an authored demo. Printed marks are visual approximations, not evidence of certification.
 
-### CPU 1214C
+Electrical reference facts include the CPU's 14DI/10DO/2AI, SM's 8DI/8DO, PSU's 24V/2.5A/60W, drive's 0.75kW low-overload / 0.55kW high-overload rating and 3AC 380–480V supply, HMI's 24V/0.23A supply and Ethernet/S7 communication, and switch's five 10/100Mbit/s ports and 24VAC/DC input. The panel is not a cyclic PROFINET IO endpoint. The SM and PSU have no Ethernet IP setting.
 
-Datasheet pp. 1–4:
+## Runtime conventions
 
-- Integrated I/O: 14 digital inputs at 24 V DC, 10 digital outputs at 24 V DC, and two analog inputs at 0–10 V DC. No analog outputs.
-- Supply: 24 V DC nominal, permissible 20.4–28.8 V DC. Rated consumption is 500 mA for the CPU alone; maximum is 1,500 mA with all expansion modules.
-- One PROFINET interface and one RJ45 port; no integrated switch. PROFINET IO controller, PROFINET IO device and TCP/IP are listed as supported.
-- This sheet describes firmware V4.7 and engineering with STEP 7 V20 or higher. The app does not implement that firmware.
+- A bounded Boolean interpreter evaluates sequential assignments every nominal 100 ms. TRUE/FALSE, NOT, AND, XOR, OR and parentheses are supported. Source and process images are separate for each selected controller. Browser scheduling is not PLC scan timing.
+- Each assigned expansion module contributes eight inputs/outputs in a consecutively packed project address map, after the CPU's 14 inputs and ten outputs. This is a simulator address convention, not a verified TIA Portal default. Two CPU analog sensor settings span 0–10 V and are displayed independently of the Boolean interpreter.
+- A logical PROFINET IO assignment and a powered physical Ethernet path are both required to enable a drive. Only switches and the drive's integrated network interface forward paths; the single-port CPU and HMI are endpoints. New Ethernet cables respect physical port counts. No Ethernet frames, IP routing, PROFINET telegrams or firmware are executed.
+- The drive ramps linearly to its target at 50 Hz per configured ramp time. It decelerates when the command or network disappears and resets to zero on loss of control power. This does not model a physical motor, inertia, STO or actual drive protection.
+- A connected 24 V supply owns downstream control power. Without a power cable a device uses a local bench supply; an assigned SM also depends on its controller. The adjustable PSU test load trips above 2.5 A and recovers when reduced. This authored fault-injection rule is not the real supply's overload curve and does not calculate connected-device current demand. Drive mains power is assumed when its virtual supply is enabled.
+- The sample HMI reads outputs through the powered Ethernet topology. Its screen and the conveyor animation are illustrative process feedback.
 
-### SM 1223
-
-Datasheet pp. 1–2:
-
-- Eight 24 V DC sink/source digital inputs and eight transistor digital outputs, rated 0.5 A per output.
-- Supply: 24 V DC nominal, permissible 20.4–28.8 V DC. Maximum current from the 5 V backplane bus is 145 mA.
-- This is local S7-1200 I/O expansion through the backplane, not an Ethernet endpoint. Its sheet lists no Ethernet interface.
-- CPU process-I/O addresses belong to the engineering project; this sheet does not establish fixed default byte addresses. An IP address field is not an SM 1223 device parameter.
-
-### SITOP PSU100C
-
-Datasheet pp. 1–3:
-
-- Output: 24 V DC, 2.5 A, 60 W. Output adjustment is by physical potentiometer, 22.2–26.4 V.
-- The product description says input **120–230 V AC**, with **110–300 V DC** also supported. The detailed AC input table instead gives **100–230 V nominal** and **85–264 V allowable**. These are distinct source labels and are not silently treated as the same range. Frequency range is 47–63 Hz.
-- Input current: 1.21 A at 100 V and 0.67 A at 230 V.
-- Listed connections are L/N/PE input and +/− output screw terminals; auxiliary contacts are absent. No network interface is listed. Project notes are not remote voltage control or a digital startup command.
-
-### SINAMICS G120C
-
-Datasheet p. 1/1:
-
-- Supply: three-phase AC 380–480 V, +10%/−20%, 47–63 Hz.
-- Rated power: 0.75 kW with low-overload rating or 0.55 kW with high-overload rating.
-- External 24 V; six digital inputs, two digital outputs, one analog input and one analog output.
-- The exact order number is labeled **PROFINET-PN**. This one-page sheet does not verify telegram configuration, parameter behavior, motion simulation or firmware execution.
-
-### KTP700 Basic
-
-Datasheet pp. 1–2 and 6:
-
-- Supply: 24 V DC nominal, permissible 19.2–28.8 V DC; 230 mA rated current and 5.5 W typical active input power.
-- One Industrial Ethernet interface. TCP/IP, DHCP, DCP and LLDP are listed as supported.
-- **PROFINET is listed as supported, but PROFINET IO protocol is explicitly listed as unsupported.** Ethernet/HMI communication must not be represented as a cyclic PROFINET IO device relationship.
-- S7-1200 process coupling is supported. Actual screens, tags and HMI runtime behavior require separate implementation and validation.
-
-### SCALANCE XB005
-
-Datasheet pp. 1–2:
-
-- Unmanaged Industrial Ethernet switch; five RJ45 ports at 10/100 Mbit/s. Managed-switch capability is explicitly absent.
-- Supply supports **24 V AC/DC**, with 19.2–28.8 V ranges. Maximum DC consumption is 70 mA; rated power loss is 1.68 W.
-- PROFINET conformity class A describes network compatibility; it does not establish a configurable management IP or a PROFINET IO endpoint.
-
-The official [SCALANCE XB-000 operating instructions](https://cache.industry.siemens.com/dl/files/806/32983806/att_1092422/v1/BA_SCALANCE-XB-000_76.pdf), **01/2022, A2B00077300-11**, printed p. 14, list Web/SNMP/PROFINET diagnostics as absent for XB005. The same table lists IRT and ring-redundancy capabilities as absent. Printed p. 13 describes Industrial Ethernet switching. The app should treat it as an unmanaged network connection point without a management IP.
-
-## Model coverage
-
-These checks cover selected exact-order datasheet facts and the cited SCALANCE manual pages. They do not establish complete manual coverage, firmware fidelity, exact mechanical geometry, electrical compatibility, PLC scan timing, protocol emulation, drive behavior, protection functions or safety behavior.
-
-App address fields and connections describe a virtual project. They do not configure, program or commission hardware. The Boolean interpreter implements only its stated syntax subset; it is not a Siemens compiler or firmware emulator. Source-backed dimensions provide reference proportions while visual housing detail remains approximate.
-
-Direct Industry Mall, SiePortal and Siemens support-page requests were inaccessible during these checks (HTTP 403). The official datasheet PDF endpoint and linked SCALANCE manual PDF were accessible. The S7-1200 system manual was not successfully retrieved and read in this verification pass; no process-address defaults or complete firmware behavior are claimed from it.
-
-## v1.2 procedural models and runtime conventions
-
-The six exact-order datasheet endpoints were requested again on 2026-10-07 during the modeling update. CPU1214C, SM1223, KTP700 and XB005 were accessible; SITOP and G120C retrieval failed in this pass, so their previously documented checks remain the evidence for dimensions and ratings. No additional firmware behavior is inferred from datasheets. KTP700's eight function keys and 154.1 × 85.9 mm active display are listed on datasheet p. 1; the updated model uses that display size.
-
-Housing detail is procedurally drawn, not imported manufacturer CAD. Screw spacing, socket geometry, covers, ventilation, rail attachment and drive readout are representative. Exploded view separates visual components for inspection; it is not a disassembly instruction. HMI rear geometry remains approximate because 39 mm denotes mounting depth.
-
-Runtime rules are authored teaching conventions: consecutively packed expansion bits, a linear drive frequency ramp, a sample HMI overview, switch connection-count indicators and an automatically recovering PSU demo trip above 2.5 A. They do not reproduce electrical protection curves, protocols, telegrams, scan timing, firmware or physical machine behavior. Power connections remain topology drawings; every device uses its own virtual supply toggle.
+The project never connects to, commissions or downloads programs to physical hardware. Autosave stores validated project data in this browser; JSON files provide transfer and backup. Runtime input switches, scan count and activity history are session state. Forty snapshots support whole-project undo/redo, including replacement and deletion.
